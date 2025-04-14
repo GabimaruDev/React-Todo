@@ -29,7 +29,7 @@ const Task: FC<TaskProps> = (props) => {
     };
 
     useEffect(() => {
-        if (editRef.current) {
+        if (isEditing && editRef.current) {
             editRef.current.focus();
         }
     }, [isEditing]);
@@ -56,12 +56,7 @@ const Task: FC<TaskProps> = (props) => {
                 <button className="icon-wrapper" onClick={() => handleEdit(id)}>
                     <IconEdit className="icon" />
                 </button>
-                <button
-                    className="icon-wrapper"
-                    onClick={() => {
-                        deleteTask(id);
-                    }}
-                >
+                <button className="icon-wrapper" onClick={() => deleteTask(id)}>
                     <IconTrash className="icon" />
                 </button>
                 <button {...attributes} {...listeners} className="icon-wrapper">
