@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./styles/App.css";
 import Task from "./components/Task/Task";
 import {
@@ -36,6 +36,10 @@ function App() {
     const [activeTasks, setActiveTasks] = useState(false);
     const [completedTasks, setCompletedTasks] = useState(false);
 
+    useEffect(() => {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }, [tasks]);
+
     function maxId() {
         if (tasks.length > 0) {
             return tasks.reduce((max, task) => Math.max(max, task.id), 0) + 1;
@@ -64,14 +68,12 @@ function App() {
         });
 
         setTasks(updatedTasks);
-        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
     };
 
     const addTask = () => {
         if (newTask && newTask.text.trim() !== "") {
             const updatedTasks = [...tasks, { ...newTask, id: maxId() }];
             setTasks(updatedTasks);
-            localStorage.setItem("tasks", JSON.stringify(updatedTasks));
             setNewTask({ id: maxId(), checked: false, text: "", isEditing: false });
         }
     };
@@ -100,13 +102,11 @@ function App() {
         });
 
         setTasks(updatedTasks);
-        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
     };
 
     const deleteTask = (index: number) => {
         const updatedTasks = tasks.filter((i) => i.id !== index);
         setTasks(updatedTasks);
-        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
     };
 
     const getTaskPos = (id: number) => {
@@ -126,7 +126,6 @@ function App() {
             const originalPos = getTaskPos(Number(active.id));
             const newPos = getTaskPos(Number(over?.id));
             const newTasks = arrayMove(tasks, originalPos, newPos);
-            localStorage.setItem("tasks", JSON.stringify(newTasks));
             return newTasks;
         });
     };
