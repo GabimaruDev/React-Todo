@@ -33,7 +33,7 @@ body {
 }
 
 body::-webkit-scrollbar {
-    visibility: hidden;
+    display: none;
 }
 
 button {

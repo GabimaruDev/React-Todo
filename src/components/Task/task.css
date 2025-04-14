@@ -6,13 +6,6 @@
     gap: 1rem;
     background-color: var(--black-color);
     border-radius: 0.5rem;
-    -webkit-border-radius: 0.5rem;
-    -moz-border-radius: 0.5rem;
-    -ms-border-radius: 0.5rem;
-    -o-border-radius: 0.5rem;
-}
-
-.tasks:has(.task) {
     padding: 1rem;
 }
 
@@ -27,10 +20,6 @@
     line-height: 140%;
     border: 2px solid var(--black-color);
     border-radius: 0.5rem;
-    -webkit-border-radius: 0.5rem;
-    -moz-border-radius: 0.5rem;
-    -ms-border-radius: 0.5rem;
-    -o-border-radius: 0.5rem;
     touch-action: none;
 }
 
