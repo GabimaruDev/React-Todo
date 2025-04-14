@@ -5,6 +5,8 @@ import {
     closestCorners,
     DndContext,
     DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
     KeyboardSensor,
     MouseSensor,
     PointerSensor,
@@ -17,17 +19,22 @@ import {
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 
 interface ObjectTask {
     id: number;
     checked: boolean;
     text: string;
+    isEditing: boolean;
 }
 
 function App() {
     const storedTasks = localStorage.getItem("tasks");
     const [tasks, setTasks] = useState<ObjectTask[]>(storedTasks ? JSON.parse(storedTasks) : []);
-    const [newTask, setNewTask] = useState<ObjectTask>({ id: maxId(), checked: false, text: "" });
+    const [newTask, setNewTask] = useState<ObjectTask>({ id: maxId(), checked: false, text: "", isEditing: false });
+    const [activeId, setActiveId] = useState<number | null>(null);
+    const [activeTasks, setActiveTasks] = useState(false);
+    const [completedTasks, setCompletedTasks] = useState(false);
 
     function maxId() {
         if (tasks.length > 0) {
@@ -47,21 +54,6 @@ function App() {
         }
     };
 
-    const addTask = () => {
-        if (newTask && newTask.text.trim() !== "") {
-            const updatedTasks = [...tasks, { ...newTask, id: maxId() }];
-            setTasks(updatedTasks);
-            localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-            setNewTask({ id: maxId(), checked: false, text: "" });
-        }
-    };
-
-    const deleteTask = (index: number) => {
-        const updatedTasks = tasks.filter((i) => i.id !== index);
-        setTasks(updatedTasks);
-        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-    };
-
     const handleChecked = (index: number) => {
         const updatedTasks = tasks.map((item) => {
             if (item.id === index) {
@@ -75,11 +67,58 @@ function App() {
         localStorage.setItem("tasks", JSON.stringify(updatedTasks));
     };
 
+    const addTask = () => {
+        if (newTask && newTask.text.trim() !== "") {
+            const updatedTasks = [...tasks, { ...newTask, id: maxId() }];
+            setTasks(updatedTasks);
+            localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+            setNewTask({ id: maxId(), checked: false, text: "", isEditing: false });
+        }
+    };
+
+    const handleEdit = (id: number) => {
+        setTasks((tasks) => {
+            const taskToUpdate = [...tasks].find((task) => task.id === id);
+            if (taskToUpdate) {
+                taskToUpdate.isEditing = true;
+            }
+
+            return [...tasks];
+        });
+    };
+
+    const saveEditTask = (text: string) => {
+        const updatedTasks = tasks.map((task) => {
+            if (task.isEditing) {
+                if (text.trim() !== "") {
+                    return { ...task, isEditing: false, text: text };
+                }
+                return { ...task, isEditing: false };
+            } else {
+                return task;
+            }
+        });
+
+        setTasks(updatedTasks);
+        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+    };
+
+    const deleteTask = (index: number) => {
+        const updatedTasks = tasks.filter((i) => i.id !== index);
+        setTasks(updatedTasks);
+        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+    };
+
     const getTaskPos = (id: number) => {
         return tasks.findIndex((task) => task.id === id);
     };
 
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveId(Number(event.active.id));
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
+        setActiveId(null);
         const { active, over } = event;
         if (active.id === over?.id) return;
 
@@ -93,7 +132,7 @@ function App() {
     };
 
     const sensorSettings = {
-        distance: 6,
+        distance: 10,
     };
 
     const sensors = useSensors(
@@ -126,27 +165,94 @@ function App() {
                 </button>
             </div>
             <ol className="tasks">
-                <DndContext sensors={sensors} onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
+                <DndContext
+                    sensors={sensors}
+                    modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                    collisionDetection={closestCorners}
+                >
                     <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
-                        {tasks.map((task) => {
-                            return (
+                        {tasks
+                            .filter((task) => {
+                                if (activeTasks) {
+                                    return !task.checked;
+                                } else if (completedTasks) return task.checked;
+                                else {
+                                    return task;
+                                }
+                            })
+                            .map((task) => (
                                 <Task
                                     key={task.id}
                                     id={task.id}
                                     checked={task.checked}
-                                    text={task.text}
                                     handleChecked={handleChecked}
+                                    text={task.text}
+                                    isEditing={task.isEditing}
+                                    handleEdit={handleEdit}
+                                    saveEditTask={saveEditTask}
                                     deleteTask={deleteTask}
+                                    active={!!activeId && activeId === task.id}
                                 />
-                            );
-                        })}
+                            ))}
                     </SortableContext>
+                    <DragOverlay className="transparent">
+                        {activeId ? (
+                            <>
+                                {tasks
+                                    .filter(({ id }) => id === activeId)
+                                    .map((task) => (
+                                        <Task
+                                            key={task.id}
+                                            id={task.id}
+                                            checked={task.checked}
+                                            handleChecked={handleChecked}
+                                            text={task.text}
+                                            isEditing={task.isEditing}
+                                            handleEdit={handleEdit}
+                                            saveEditTask={saveEditTask}
+                                            deleteTask={deleteTask}
+                                        />
+                                    ))}
+                            </>
+                        ) : null}
+                    </DragOverlay>
                 </DndContext>
+                <div className="buttons">
+                    <button
+                        className="button"
+                        onClick={() => {
+                            setActiveTasks(false);
+                            setCompletedTasks(false);
+                        }}
+                    >
+                        All
+                    </button>
+                    <button
+                        className="button"
+                        onClick={() => {
+                            setActiveTasks(true);
+                            setCompletedTasks(false);
+                        }}
+                    >
+                        Active
+                    </button>
+                    <button
+                        className="button"
+                        onClick={() => {
+                            setCompletedTasks(true);
+                            setActiveTasks(false);
+                        }}
+                    >
+                        Completed
+                    </button>
+                </div>
             </ol>
             <p className="developer">
                 <span>Developer: </span>
-                <a className="link" href="https://github.com/GabimaruDevastated">
-                    GabimaruDevastated
+                <a className="link" href="https://github.com/GabimaruDev">
+                    GabimaruDev
                 </a>
             </p>
         </div>

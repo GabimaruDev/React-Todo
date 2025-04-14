@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 
-const IconTrash = (props: SVGProps<SVGSVGElement>) => (
+export const IconTrash = (props: SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" xmlSpace="preserve" fillRule="evenodd" viewBox="0 0 21 21" {...props}>
         <g fill="red" fillRule="nonzero">
             <path d="M17.741 3.599v.012l-.002.035v.005l-.923 14.522c-.03.483-.235.925-.553 1.244a1.72 1.72 0 0 1-1.23.513h-9.15c-.486 0-.916-.196-1.233-.513a1.92 1.92 0 0 1-.55-1.248L3.26 3.648v-.039l-.001-.023v-.029a.42.42 0 0 1 .414-.421h.004v-.002h13.647a.42.42 0 0 1 .418.465zM15.98 18.12l.9-14.146H4.119l.818 14.15c.016.273.13.521.307.699a.9.9 0 0 0 .639.268h9.15c.25 0 .471-.103.636-.267a1.1 1.1 0 0 0 .31-.704z" />
@@ -9,5 +9,3 @@ const IconTrash = (props: SVGProps<SVGSVGElement>) => (
         </g>
     </svg>
 );
-
-export default IconTrash;

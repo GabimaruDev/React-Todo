@@ -12,9 +12,10 @@
 }
 
 :root {
-    --white-color: #f5f5f5;
     --black-color: #131313;
     --black-light-color: #222;
+    --gray-color: #aaa;
+    --white-color: #f5f5f5;
     --accent-color: #007bff;
 }
 
@@ -28,6 +29,11 @@ body {
     font-family: "Jost";
     margin: 0 auto;
     max-width: 75rem;
+    overflow-y: scroll;
+}
+
+body::-webkit-scrollbar {
+    visibility: hidden;
 }
 
 button {

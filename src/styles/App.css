@@ -24,7 +24,7 @@
 }
 
 .button {
-    padding: 0.5rem 1.25rem;
+    padding: 0.5rem 0.75rem;
     background-color: var(--accent-color);
     color: var(--white-color);
     font-weight: bold;
@@ -68,4 +68,17 @@
 
 .link:hover {
     text-decoration: underline;
+}
+
+.transparent {
+    opacity: 0.925;
+}
+
+.semi-transparent {
+    opacity: 0.45;
+}
+
+.buttons {
+    display: flex;
+    gap: 0.75rem;
 }

@@ -1,28 +1,41 @@
-import { FC } from "react";
-import IconTrash from "../../assets/icons/trash";
+import { FC, useEffect, useRef } from "react";
 import "./task.css";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { IconTrash } from "../../assets/icons/IconTrash";
+import { IconDragIndicator } from "../../assets/icons/IconDragIndicator";
+import { IconEdit } from "../../assets/icons/IconEdit";
 
 interface TaskProps {
     id: number;
-    text: string;
     checked: boolean;
-    handleChecked: (index: number) => void;
-    deleteTask: (index: number) => void;
+    handleChecked: (id: number) => void;
+    text: string;
+    isEditing: boolean;
+    handleEdit: (id: number) => void;
+    saveEditTask: (text: string) => void;
+    deleteTask: (id: number) => void;
+    active?: boolean;
 }
 
 const Task: FC<TaskProps> = (props) => {
-    const { id, text, checked, handleChecked, deleteTask } = props;
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+    const { id, checked, handleChecked, text, isEditing, handleEdit, saveEditTask, deleteTask, active } = props;
+    const editRef = useRef<HTMLParagraphElement | null>(null);
 
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
     const styles = {
         transition,
         transform: CSS.Translate.toString(transform),
     };
 
+    useEffect(() => {
+        if (editRef.current) {
+            editRef.current.focus();
+        }
+    }, [isEditing]);
+
     return (
-        <li ref={setNodeRef} {...attributes} {...listeners} style={styles} className="task">
+        <li ref={setNodeRef} style={styles} className={`task ${active ? "semi-transparent" : ""}`}>
             <div className="task__inner">
                 <input
                     className="checkbox"
@@ -31,16 +44,30 @@ const Task: FC<TaskProps> = (props) => {
                     type="checkbox"
                     name="checkbox"
                 />
-                <p className="task__text">{text}</p>
+                <p
+                    className="task__text"
+                    dangerouslySetInnerHTML={{ __html: text }}
+                    contentEditable={isEditing}
+                    ref={editRef}
+                    onBlur={() => saveEditTask(editRef.current?.innerText || "")}
+                />
             </div>
-            <button
-                className="icon icon-delete"
-                onClick={() => {
-                    deleteTask(id);
-                }}
-            >
-                <IconTrash className="trash" />
-            </button>
+            <div className="task__buttons">
+                <button className="icon-wrapper" onClick={() => handleEdit(id)}>
+                    <IconEdit className="icon" />
+                </button>
+                <button
+                    className="icon-wrapper"
+                    onClick={() => {
+                        deleteTask(id);
+                    }}
+                >
+                    <IconTrash className="icon" />
+                </button>
+                <button {...attributes} {...listeners} className="icon-wrapper">
+                    <IconDragIndicator className="icon" />
+                </button>
+            </div>
         </li>
     );
 };
