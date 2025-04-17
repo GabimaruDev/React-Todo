@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import "./styles/App.css";
+import { useCallback, useEffect, useReducer, useState } from "react";
+import "./app/styles/App.css";
 import Task from "./components/Task/Task";
 import {
     closestCorners,
@@ -20,21 +20,24 @@ import {
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
-
-interface ObjectTask {
-    id: number;
-    checked: boolean;
-    text: string;
-    isEditing: boolean;
-}
+import { store } from "./app/store";
+import TasksFooter from "./components/TasksFooter/TasksFooter";
+import AddTask from "./components/AddTask/AddTask";
 
 function App() {
     const storedTasks = localStorage.getItem("tasks");
     const [tasks, setTasks] = useState<ObjectTask[]>(storedTasks ? JSON.parse(storedTasks) : []);
     const [newTask, setNewTask] = useState<ObjectTask>({ id: maxId(), checked: false, text: "", isEditing: false });
     const [activeId, setActiveId] = useState<number | null>(null);
-    const [activeTasks, setActiveTasks] = useState(false);
-    const [completedTasks, setCompletedTasks] = useState(false);
+    const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+    useEffect(() => {
+        const unsubscribe = store.subscribe(() => {
+            forceUpdate();
+        });
+
+        return unsubscribe;
+    }, []);
 
     useEffect(() => {
         localStorage.setItem("tasks", JSON.stringify(tasks));
@@ -48,30 +51,12 @@ function App() {
         }
     }
 
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setNewTask({ ...newTask, text: event.target.value });
-    };
-
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Enter") {
-            addTask();
-        }
-    };
-
-    const handleChecked = (index: number) => {
-        const updatedTasks = tasks.map((item) => {
-            if (item.id === index) {
-                return { ...item, checked: !item.checked };
-            } else {
-                return item;
-            }
-        });
-
-        setTasks(updatedTasks);
-    };
+    const handleChecked = useCallback((id: number) => {
+        setTasks((tasks) => tasks.map((item) => (item.id === id ? { ...item, checked: !item.checked } : item)));
+    }, []);
 
     const addTask = () => {
-        if (newTask && newTask.text.trim() !== "") {
+        if (newTask?.text.trim() !== "") {
             const updatedTasks = [...tasks, { ...newTask, id: maxId() }];
             setTasks(updatedTasks);
             setNewTask({ id: maxId(), checked: false, text: "", isEditing: false });
@@ -104,9 +89,8 @@ function App() {
         setTasks(updatedTasks);
     };
 
-    const deleteTask = (index: number) => {
-        const updatedTasks = tasks.filter((i) => i.id !== index);
-        setTasks(updatedTasks);
+    const deleteTask = (id: number) => {
+        setTasks(tasks.filter((i) => i.id !== id));
     };
 
     const getTaskPos = (id: number) => {
@@ -147,23 +131,15 @@ function App() {
     return (
         <div className="App">
             <h1 className="title">To-Do List</h1>
-            <div className="add-task-wrapper">
-                <input
-                    id="newTask"
-                    className="input"
-                    type="text"
-                    placeholder="Task text"
-                    autoComplete="off"
-                    autoFocus={true}
-                    value={newTask.text}
-                    onKeyDown={handleKeyDown}
-                    onChange={handleInputChange}
-                />
-                <button className="button" onClick={addTask}>
-                    Add Task
-                </button>
-            </div>
-            <ol className="tasks">
+            <AddTask newTask={newTask} setNewTask={setNewTask} addTask={addTask} />
+            <ol className="tasks-wrapper">
+                {store.getState().activeTasks ? (
+                    <p className="text">Active tasks</p>
+                ) : store.getState().completedTasks ? (
+                    <p className="text">Сompleted tasks</p>
+                ) : (
+                    <p className="text">All tasks</p>
+                )}
                 <DndContext
                     sensors={sensors}
                     modifiers={[restrictToVerticalAxis, restrictToParentElement]}
@@ -172,31 +148,30 @@ function App() {
                     collisionDetection={closestCorners}
                 >
                     <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
-                        {tasks
-                            .filter((task) => {
-                                if (activeTasks) {
-                                    return !task.checked;
-                                } else if (completedTasks) return task.checked;
-                                else {
-                                    return task;
-                                }
-                            })
-                            .map((task) => (
-                                <Task
-                                    key={task.id}
-                                    id={task.id}
-                                    checked={task.checked}
-                                    handleChecked={handleChecked}
-                                    text={task.text}
-                                    isEditing={task.isEditing}
-                                    handleEdit={handleEdit}
-                                    saveEditTask={saveEditTask}
-                                    deleteTask={deleteTask}
-                                    active={!!activeId && activeId === task.id}
-                                />
-                            ))}
+                        <div className="tasks">
+                            {tasks
+                                .filter((task) => {
+                                    if (store.getState().activeTasks) return !task.checked;
+                                    else if (store.getState().completedTasks) return task.checked;
+                                    else return task;
+                                })
+                                .map((task) => (
+                                    <Task
+                                        key={task.id}
+                                        id={task.id}
+                                        checked={task.checked}
+                                        handleChecked={handleChecked}
+                                        text={task.text}
+                                        isEditing={task.isEditing}
+                                        handleEdit={handleEdit}
+                                        saveEditTask={saveEditTask}
+                                        deleteTask={deleteTask}
+                                        active={!!activeId && activeId === task.id}
+                                    />
+                                ))}
+                        </div>
                     </SortableContext>
-                    <DragOverlay className="transparent">
+                    <DragOverlay className="low-transparent">
                         {activeId ? (
                             <>
                                 {tasks
@@ -218,35 +193,7 @@ function App() {
                         ) : null}
                     </DragOverlay>
                 </DndContext>
-                <div className="buttons">
-                    <button
-                        className="button"
-                        onClick={() => {
-                            setActiveTasks(false);
-                            setCompletedTasks(false);
-                        }}
-                    >
-                        All
-                    </button>
-                    <button
-                        className="button"
-                        onClick={() => {
-                            setActiveTasks(true);
-                            setCompletedTasks(false);
-                        }}
-                    >
-                        Active
-                    </button>
-                    <button
-                        className="button"
-                        onClick={() => {
-                            setCompletedTasks(true);
-                            setActiveTasks(false);
-                        }}
-                    >
-                        Completed
-                    </button>
-                </div>
+                <TasksFooter setTasks={setTasks} tasks={tasks} />
             </ol>
             <p className="developer">
                 <span>Developer: </span>

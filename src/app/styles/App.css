@@ -4,7 +4,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100dvh;
-    max-width: 36rem;
+    max-width: 45rem;
     margin: 0 auto;
     padding: 1.25rem 0.75rem;
     gap: 1rem;
@@ -12,6 +12,11 @@
 
 .title {
     font-size: 3rem;
+}
+
+.text {
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 
 .input {
@@ -53,6 +58,14 @@
     min-height: 1.125rem;
 }
 
+.low-transparent {
+    opacity: 0.925;
+}
+
+.semi-transparent {
+    opacity: 0.45;
+}
+
 .developer {
     font-size: 1.125rem;
 }
@@ -63,17 +76,4 @@
 
 .link:hover {
     text-decoration: underline;
-}
-
-.transparent {
-    opacity: 0.925;
-}
-
-.semi-transparent {
-    opacity: 0.45;
-}
-
-.buttons {
-    display: flex;
-    gap: 0.75rem;
 }
