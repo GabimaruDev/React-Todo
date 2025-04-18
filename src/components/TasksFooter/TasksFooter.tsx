@@ -1,50 +1,26 @@
-import { FC } from "react";
-import { store } from "../../app/store";
 import "./tasksFooter.css";
+import { activeTasks, allTasks, completedTasks, clearCompletedTasks } from "../../app/store/taskSlice";
+import { useAppDispatch, useAppSelector } from "../../hook";
 
-interface TasksFooter {
-    tasks: ObjectTask[];
-    setTasks(tasks: ObjectTask[]): void;
-}
-
-const TasksFooter: FC<TasksFooter> = (props) => {
-    const { tasks, setTasks } = props;
+const TasksFooter = () => {
+    const tasks = useAppSelector((state) => state.tasks.tasks);
+    const dispatch = useAppDispatch();
 
     return (
         <div className="tasks__footer">
             <p>Active tasks left: {tasks.filter((task) => !task.checked).length}</p>
             <div className="buttons">
-                <button
-                    className="button"
-                    onClick={() => {
-                        store.dispatch({ type: "ALL_TASKS" });
-                    }}
-                >
+                <button className="button" onClick={() => dispatch(allTasks())}>
                     All
                 </button>
-                <button
-                    className="button"
-                    onClick={() => {
-                        store.dispatch({ type: "ACTIVE_TASKS" });
-                    }}
-                >
+                <button className="button" onClick={() => dispatch(activeTasks())}>
                     Active
                 </button>
-                <button
-                    className="button"
-                    onClick={() => {
-                        store.dispatch({ type: "COMPLETED_TASKS" });
-                    }}
-                >
+                <button className="button" onClick={() => dispatch(completedTasks())}>
                     Completed
                 </button>
             </div>
-            <button
-                className="button"
-                onClick={() => {
-                    setTasks(tasks.filter((task) => !task.checked));
-                }}
-            >
+            <button className="button" onClick={() => dispatch(clearCompletedTasks())}>
                 Clear completed
             </button>
         </div>

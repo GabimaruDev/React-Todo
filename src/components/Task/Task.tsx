@@ -5,21 +5,19 @@ import { CSS } from "@dnd-kit/utilities";
 import { IconTrash } from "../../assets/icons/IconTrash";
 import { IconDragIndicator } from "../../assets/icons/IconDragIndicator";
 import { IconEdit } from "../../assets/icons/IconEdit";
+import { useAppDispatch } from "../../hook";
+import { completeTask, editTask, removeTask, saveEditedTask } from "../../app/store/taskSlice";
 
 interface TaskProps {
     id: number;
     checked: boolean;
-    handleChecked: (id: number) => void;
     text: string;
     isEditing: boolean;
-    handleEdit: (id: number) => void;
-    saveEditTask: (text: string) => void;
-    deleteTask: (id: number) => void;
-    active?: boolean;
+    drag?: boolean;
 }
 
 const Task: FC<TaskProps> = (props) => {
-    const { id, checked, handleChecked, text, isEditing, handleEdit, saveEditTask, deleteTask, active } = props;
+    const { id, checked, text, isEditing, drag } = props;
     const editRef = useRef<HTMLParagraphElement | null>(null);
 
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
@@ -28,6 +26,8 @@ const Task: FC<TaskProps> = (props) => {
         transform: CSS.Translate.toString(transform),
     };
 
+    const dispatch = useAppDispatch();
+
     useEffect(() => {
         if (isEditing && editRef.current) {
             editRef.current.focus();
@@ -35,11 +35,11 @@ const Task: FC<TaskProps> = (props) => {
     }, [isEditing]);
 
     return (
-        <li ref={setNodeRef} style={styles} className={`task ${active ? "semi-transparent" : ""}`}>
+        <li ref={setNodeRef} style={styles} className={`task ${drag ? "semi-transparent" : ""}`}>
             <div className="task__inner">
                 <input
                     className="checkbox"
-                    onChange={() => handleChecked(id)}
+                    onChange={() => dispatch(completeTask(id))}
                     checked={checked}
                     type="checkbox"
                     name="checkbox"
@@ -49,14 +49,14 @@ const Task: FC<TaskProps> = (props) => {
                     dangerouslySetInnerHTML={{ __html: text }}
                     contentEditable={isEditing}
                     ref={editRef}
-                    onBlur={() => saveEditTask(editRef.current?.innerText || "")}
+                    onBlur={() => dispatch(saveEditedTask(editRef.current?.innerText || ""))}
                 />
             </div>
             <div className="task__buttons">
-                <button className="icon-wrapper" onClick={() => handleEdit(id)}>
+                <button className="icon-wrapper" onClick={() => dispatch(editTask(id))}>
                     <IconEdit className="icon" />
                 </button>
-                <button className="icon-wrapper" onClick={() => deleteTask(id)}>
+                <button className="icon-wrapper" onClick={() => dispatch(removeTask(id))}>
                     <IconTrash className="icon" />
                 </button>
                 <button {...attributes} {...listeners} className="icon-wrapper">

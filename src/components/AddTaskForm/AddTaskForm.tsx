@@ -1,12 +1,12 @@
 import { FC } from "react";
 
-interface AddTaskProps {
+interface AddTaskFormProps {
     newTask: ObjectTask;
     setNewTask(newTask: ObjectTask): void;
     addTask(): void;
 }
 
-const AddTask: FC<AddTaskProps> = (props) => {
+const AddTaskForm: FC<AddTaskFormProps> = (props) => {
     const { newTask, setNewTask, addTask } = props;
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,4 +39,4 @@ const AddTask: FC<AddTaskProps> = (props) => {
     );
 };
 
-export default AddTask;
+export default AddTaskForm;
