@@ -1,6 +1,6 @@
-import "./tasksFooter.css";
-import { activeTasks, allTasks, completedTasks, clearCompletedTasks } from "../../app/store/taskSlice";
+import { activeTasks, allTasks, clearCompletedTasks, completedTasks } from "../../app/store/taskSlice";
 import { useAppDispatch, useAppSelector } from "../../hook";
+import "./tasksFooter.css";
 
 const TasksFooter = () => {
     const tasks = useAppSelector((state) => state.tasks.tasks);

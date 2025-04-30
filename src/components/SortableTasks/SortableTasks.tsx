@@ -1,4 +1,3 @@
-import Task from "../Task/Task";
 import {
     closestCorners,
     DndContext,
@@ -11,16 +10,17 @@ import {
     useSensor,
     useSensors,
 } from "@dnd-kit/core";
+import { restrictToParentElement, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
     arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
+import { useState } from "react";
 import { replaceTasks } from "../../app/store/taskSlice";
 import { useAppDispatch, useAppSelector } from "../../hook";
-import { useState } from "react";
+import Task from "../Task/Task";
 
 const SortableTasks = () => {
     const dispatch = useAppDispatch();
@@ -71,7 +71,7 @@ const SortableTasks = () => {
             collisionDetection={closestCorners}
         >
             <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
-                <div className="tasks">
+                <ul className="tasks">
                     {tasks
                         .filter((task) => {
                             if (activeTasks) return !task.checked;
@@ -88,7 +88,7 @@ const SortableTasks = () => {
                                 drag={dragId === task.id}
                             />
                         ))}
-                </div>
+                </ul>
             </SortableContext>
             <DragOverlay className="low-transparent">
                 {dragId ? (

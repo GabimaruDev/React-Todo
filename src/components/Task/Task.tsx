@@ -1,12 +1,12 @@
-import { FC, useEffect, useRef } from "react";
-import "./task.css";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { IconTrash } from "../../assets/icons/IconTrash";
+import { FC, useEffect, useRef } from "react";
+import { completeTask, editTask, removeTask, saveEditedTask } from "../../app/store/taskSlice";
 import { IconDragIndicator } from "../../assets/icons/IconDragIndicator";
 import { IconEdit } from "../../assets/icons/IconEdit";
+import { IconTrash } from "../../assets/icons/IconTrash";
 import { useAppDispatch } from "../../hook";
-import { completeTask, editTask, removeTask, saveEditedTask } from "../../app/store/taskSlice";
+import "./task.css";
 
 interface TaskProps {
     id: number;

@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { pushTask, replaceTasks } from "./app/store/taskSlice";
 import "./app/styles/App.css";
-import TasksFooter from "./components/TasksFooter/TasksFooter";
 import AddTaskForm from "./components/AddTaskForm/AddTaskForm";
 import SortableTasks from "./components/SortableTasks/SortableTasks";
-import { pushTask, replaceTasks } from "./app/store/taskSlice";
+import TasksFooter from "./components/TasksFooter/TasksFooter";
 import { useAppDispatch, useAppSelector } from "./hook";
 
 function App() {
@@ -16,7 +16,6 @@ function App() {
 
     useEffect(() => {
         if (storedTasks) dispatch(replaceTasks(JSON.parse(storedTasks)));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -35,23 +34,25 @@ function App() {
     };
 
     return (
-        <div className="App">
-            <h1 className="title">To-Do List</h1>
-            <AddTaskForm newTask={newTask} setNewTask={setNewTask} addTask={addTask} />
-            <ol className="tasks-wrapper">
-                <p className="text">
+        <main className="App">
+            <section className="section">
+                <h1 className="title">To-Do List</h1>
+                <AddTaskForm newTask={newTask} setNewTask={setNewTask} addTask={addTask} />
+            </section>
+            <section className="tasks-wrapper">
+                <h2 className="text">
                     {activeTasks ? "Active tasks" : completedTasks ? "Сompleted tasks" : "All tasks"}
-                </p>
+                </h2>
                 <SortableTasks />
                 <TasksFooter />
-            </ol>
+            </section>
             <p className="developer">
                 <span>Developer: </span>
                 <a className="link" href="https://github.com/GabimaruDev">
                     GabimaruDev
                 </a>
             </p>
-        </div>
+        </main>
     );
 }
 
